@@ -1,13 +1,12 @@
-package com.ddong_kka.board_api.domain;
+package com.ddong_kka.board_api.user.domain;
 
 
 import jakarta.persistence.*;
 import lombok.*;
 
 @Getter
-@Setter
 @ToString
-@NoArgsConstructor
+@NoArgsConstructor( access = AccessLevel.PROTECTED)
 @Entity
 @Table(name = "AppUser")
 public class User {

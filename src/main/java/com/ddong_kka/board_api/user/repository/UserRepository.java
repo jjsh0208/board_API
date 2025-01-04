@@ -1,6 +1,6 @@
-package com.ddong_kka.board_api.repository;
+package com.ddong_kka.board_api.user.repository;
 
-import com.ddong_kka.board_api.domain.User;
+import com.ddong_kka.board_api.user.domain.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

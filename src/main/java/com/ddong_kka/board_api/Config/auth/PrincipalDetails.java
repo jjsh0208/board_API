@@ -1,6 +1,6 @@
 package com.ddong_kka.board_api.Config.auth;
 
-import com.ddong_kka.board_api.domain.User;
+import com.ddong_kka.board_api.user.domain.User;
 import lombok.Data;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;

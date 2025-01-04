@@ -1,7 +1,7 @@
 package com.ddong_kka.board_api.Config.JWT;
 
 import com.ddong_kka.board_api.Config.auth.PrincipalDetails;
-import com.ddong_kka.board_api.domain.User;
+import com.ddong_kka.board_api.user.domain.User;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

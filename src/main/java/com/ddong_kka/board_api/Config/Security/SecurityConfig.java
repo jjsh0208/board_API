@@ -7,6 +7,7 @@ import com.ddong_kka.board_api.Config.JWT.JwtUtil;
 import com.ddong_kka.board_api.Config.auth.JsonLoginFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -35,7 +36,6 @@ public class SecurityConfig {
         this.jwtUtil = jwtUtil;
     }
 
-
     @Bean
     public BCryptPasswordEncoder encoderPwd() {
         return new BCryptPasswordEncoder();
@@ -60,8 +60,9 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // 시큐리티 세션 사용안함
                 .authorizeHttpRequests(authorizationHttpRequest ->
                         authorizationHttpRequest
-                                .requestMatchers("/api/user/**").authenticated()
-                                .requestMatchers("/api/board/**").authenticated()
+                                .requestMatchers("/api/v1/user/", "/api/v1/user").permitAll()
+                                .requestMatchers("/api/v1/user/**").authenticated()
+                                .requestMatchers("/api/v1/board/**").authenticated()
                                 .requestMatchers("/api/comment/**").authenticated()
                                 .anyRequest().permitAll()
                 );

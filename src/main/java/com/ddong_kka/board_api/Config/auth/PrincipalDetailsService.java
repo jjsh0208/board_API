@@ -1,7 +1,7 @@
 package com.ddong_kka.board_api.Config.auth;
 
-import com.ddong_kka.board_api.domain.User;
-import com.ddong_kka.board_api.repository.UserRepository;
+import com.ddong_kka.board_api.user.domain.User;
+import com.ddong_kka.board_api.user.repository.UserRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
