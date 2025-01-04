@@ -18,6 +18,7 @@ public class UserService {
         User user = User.builder()
                 .email(userRegisterDto.getEmail())
                 .password(passwordEncoder.encode(userRegisterDto.getPassword()))
+                .role("ROLE_USER")
                 .build();
 
         userRepository.save(user);
