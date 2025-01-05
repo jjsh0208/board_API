@@ -9,6 +9,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 import java.sql.Timestamp;
 
 @Getter
+@Setter
 @ToString
 @NoArgsConstructor( access = AccessLevel.PROTECTED)
 @Entity
