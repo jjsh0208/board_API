@@ -51,4 +51,20 @@ public class BoardService {
 
         return targetBoard.getBoard_id();
     }
+
+    public void deleteBoard(Long id, String jwtToken) {
+
+        String userEmail = jwtUtil.getEmail(jwtToken);
+
+        User user = userRepository.findByEmail(userEmail).orElseThrow(()-> new UserNotFoundException("사용자를 찾을 수 없습니다 : "+ userEmail));
+
+        Board targetBoard = boardRepository.findById(id).orElseThrow(() -> new BoardNotFoundException("게시글을 찾을 수 없습니다 : ID = " + id));
+
+        if (!targetBoard.getUser().equals(user)){
+            throw new UnauthorizedAccessException("권한이 없습니다.");
+        }
+
+        boardRepository.delete(targetBoard);
+
+    }
 }

@@ -67,6 +67,7 @@ public class BoardRestController {
 
             return ResponseEntity.ok(successResponse);
         }  catch(IllegalArgumentException e){
+            logger.warn("JWT Token NotFond - {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(Map.of(
                             "status", HttpStatus.UNAUTHORIZED.value(),
@@ -74,6 +75,7 @@ public class BoardRestController {
                             "message", e.getMessage()
                     ));
         }  catch (Exception e) {
+            logger.error("Unexpected Error - {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of(
                             "status", HttpStatus.INTERNAL_SERVER_ERROR.value(),
@@ -124,6 +126,7 @@ public class BoardRestController {
 
             return ResponseEntity.ok(successResponse);
         } catch(IllegalArgumentException e){
+            logger.warn("JWT Token NotFond - {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(Map.of(
                             "status", HttpStatus.UNAUTHORIZED.value(),
@@ -131,6 +134,7 @@ public class BoardRestController {
                             "message", e.getMessage()
                     ));
         } catch (UserNotFoundException e) {
+            logger.warn("User NotFound - {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(Map.of(
                             "status", HttpStatus.NOT_FOUND.value(),
@@ -138,6 +142,7 @@ public class BoardRestController {
                             "message", e.getMessage()
                     ));
         } catch (BoardNotFoundException e) {
+            logger.warn("Board NotFound - {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(Map.of(
                             "status", HttpStatus.NOT_FOUND.value(),
@@ -145,6 +150,7 @@ public class BoardRestController {
                             "message", e.getMessage()
                     ));
         } catch (UnauthorizedAccessException e) {
+            logger.warn("Unauthorized Access - {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body(Map.of(
                             "status", HttpStatus.FORBIDDEN.value(),
@@ -152,6 +158,71 @@ public class BoardRestController {
                             "message", e.getMessage()
                     ));
         } catch (Exception e) {
+            logger.error("Unexpected Error - {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of(
+                            "status", HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                            "error", "Unexpected Error",
+                            "message", "예상치 못한 오류가 발생하였습니다."
+                    ));
+        }
+    }
+
+
+    @DeleteMapping("{id}")
+    public ResponseEntity<?> delete(@RequestHeader("Authorization") String authorizationHeader
+                                    , @PathVariable("id") Long id) {
+
+        String jwtToken;
+        try{
+            if (authorizationHeader != null && !authorizationHeader.startsWith("Bearer ")) {
+                throw new IllegalArgumentException("JWT token is missing or invalid");
+            }
+
+            jwtToken = authorizationHeader.substring(7);  // 'Bearer ' 부분을 제거하고 JWT만 추출
+
+            boardService.deleteBoard(id,jwtToken);
+
+            Map<String,Object> successResponse = Map.of(
+                    "message", "게시글 삭제 성공"
+            );
+
+            return ResponseEntity.ok(successResponse);
+
+        } catch(IllegalArgumentException e){
+            logger.warn("JWT Token NotFond - {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of(
+                            "status", HttpStatus.UNAUTHORIZED.value(),
+                            "error", "User Not Found",
+                            "message", e.getMessage()
+                    ));
+        } catch (UserNotFoundException e) {
+            logger.warn("User NotFound - {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of(
+                            "status", HttpStatus.NOT_FOUND.value(),
+                            "error", "User Not Found",
+                            "message", e.getMessage()
+                    ));
+        } catch (BoardNotFoundException e) {
+            logger.warn("Board NotFound - {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of(
+                            "status", HttpStatus.NOT_FOUND.value(),
+                            "error", "Board Not Found",
+                            "message", e.getMessage()
+                    ));
+        } catch (UnauthorizedAccessException e) {
+            logger.warn("Unauthorized Access - {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of(
+                            "status", HttpStatus.FORBIDDEN.value(),
+                            "error", "Unauthorized Access",
+                            "message", e.getMessage()
+                    ));
+        } catch (Exception e) {
+            logger.error("Unexpected Error - {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of(
                             "status", HttpStatus.INTERNAL_SERVER_ERROR.value(),
