@@ -47,7 +47,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    protected SecurityFilterChain filterChain(HttpSecurity http, JwtCreateHandler jwtCreateHandle) throws Exception {
+    protected SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
         // Rest API 사용으로 httpBasic , csrf 보안을 사용하지 않음
                 .csrf(csrf -> csrf.disable())

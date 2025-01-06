@@ -1,5 +1,7 @@
 package com.ddong_kka.board_api.board.controller;
 
+import com.ddong_kka.board_api.board.domain.Board;
+import com.ddong_kka.board_api.board.dto.BoardListDto;
 import com.ddong_kka.board_api.board.dto.BoardWriteDto;
 import com.ddong_kka.board_api.board.service.BoardService;
 import com.ddong_kka.board_api.exception.BoardNotFoundException;
@@ -10,6 +12,7 @@ import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -25,6 +28,63 @@ public class BoardRestController {
 
     private final BoardService boardService;
     private final Logger logger =  LoggerFactory.getLogger(BoardRestController.class);
+
+
+    @GetMapping("/")
+    public ResponseEntity<?> boardList(@RequestParam(value="page", defaultValue = "0") int page) {
+        try{
+            Page<BoardListDto> paging = boardService.getList(page);
+
+            return ResponseEntity.ok(paging);
+        } catch(IllegalArgumentException e){
+            logger.warn("Invalid page number - {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of(
+                            "status", HttpStatus.UNAUTHORIZED.value(),
+                            "error", "Invalid page number",
+                            "message", e.getMessage()
+                    ));
+        } catch (Exception e){
+            logger.error("Unexpected Error - {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of(
+                            "status", HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                            "error", "Unexpected Error",
+                            "message", "예상치 못한 오류가 발생하였습니다."
+                    ));
+        }
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<?> detail(@PathVariable("id") Long id){
+        try {
+            return ResponseEntity.ok(boardService.getDetail(id));
+        } catch(IllegalArgumentException e){
+            logger.warn("Invalid ID- {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of(
+                            "status", HttpStatus.UNAUTHORIZED.value(),
+                            "error", "Invalid ID",
+                            "message", e.getMessage()
+                    ));
+        } catch (BoardNotFoundException e) {
+            logger.warn("Board NotFound - {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of(
+                            "status", HttpStatus.NOT_FOUND.value(),
+                            "error", "Board Not Found",
+                            "message", e.getMessage()
+                    ));
+        } catch (Exception e) {
+            logger.error("Unexpected Error - {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of(
+                            "status", HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                            "error", "Unexpected Error",
+                            "message", "예상치 못한 오류가 발생하였습니다."
+                    ));
+        }
+    }
 
     @PostMapping({"/", ""})
     public ResponseEntity<?> write(@Valid @RequestBody BoardWriteDto boardWriteDto
@@ -51,7 +111,7 @@ public class BoardRestController {
                 Map<String,Object> response = Map.of(
                         "status" , HttpStatus.BAD_REQUEST.value(),
                         "error", "Validation Field",
-                        "details", errors
+                        "message", errors
                 );
 
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
@@ -71,7 +131,7 @@ public class BoardRestController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(Map.of(
                             "status", HttpStatus.UNAUTHORIZED.value(),
-                            "error", "User Not Found",
+                            "error", "Missing JWT Token",
                             "message", e.getMessage()
                     ));
         }  catch (Exception e) {
@@ -111,7 +171,7 @@ public class BoardRestController {
                 Map<String,Object> response = Map.of(
                         "status" , HttpStatus.BAD_REQUEST.value(),
                         "error", "Validation Field",
-                        "details", errors
+                        "message", errors
                 );
 
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
@@ -130,7 +190,7 @@ public class BoardRestController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(Map.of(
                             "status", HttpStatus.UNAUTHORIZED.value(),
-                            "error", "User Not Found",
+                            "error", "Missing JWT Token",
                             "message", e.getMessage()
                     ));
         } catch (UserNotFoundException e) {
@@ -194,7 +254,7 @@ public class BoardRestController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(Map.of(
                             "status", HttpStatus.UNAUTHORIZED.value(),
-                            "error", "User Not Found",
+                            "error", "Missing JWT Token",
                             "message", e.getMessage()
                     ));
         } catch (UserNotFoundException e) {

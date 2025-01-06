@@ -18,7 +18,7 @@ public class Board {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long board_id;
+    private Long boardId;
 
     @Column(length = 30, nullable = false)
     private String title;
@@ -33,10 +33,10 @@ public class Board {
     private int reports = 0;
 
     @CreationTimestamp
-    private Timestamp create_at;
+    private Timestamp createAt;
 
     @UpdateTimestamp
-    private Timestamp modify_at;
+    private Timestamp modifyAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
