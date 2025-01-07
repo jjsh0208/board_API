@@ -49,9 +49,11 @@ public class BoardService {
             throw new IllegalArgumentException("ID는 null일 수 없습니다.");
         }
 
-
         Board board =  boardRepository.findById(id)
                 .orElseThrow(() -> new BoardNotFoundException("게시글을 찾을 수 없습니다 : ID = " + id));
+
+        board.setViews(board.getViews() + 1);
+        boardRepository.save(board);
 
         BoardDetailDto response = BoardDetailDto.builder()
                 .title(board.getTitle())

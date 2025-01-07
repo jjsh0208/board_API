@@ -1,5 +1,7 @@
-package com.ddong_kka.board_api.board.domain;
+package com.ddong_kka.board_api.comment.domain;
 
+
+import com.ddong_kka.board_api.board.domain.Board;
 import com.ddong_kka.board_api.user.domain.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -13,24 +15,16 @@ import java.sql.Timestamp;
 @ToString
 @NoArgsConstructor( access = AccessLevel.PROTECTED)
 @Entity
-@Table(name = "board")
-public class Board {
+@Table(name = "comment")
+public class Comment {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long boardId;
+    private Long commentId;
 
-    @Column(length = 30, nullable = false)
-    private String title;
-
-    @Column(length = 500 , nullable = false)
     private String content;
 
-    @Column(nullable = false)
-    private int views = 0;
-
-    @Column(nullable = false)
-    private int reports = 0;
+    private int reports;
 
     @CreationTimestamp
     private Timestamp createAt;
@@ -42,11 +36,8 @@ public class Board {
     @JoinColumn(name = "userId", nullable = false)
     private User user;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "boardId", nullable = false)
+    private Board board;
 
-    @Builder
-    public Board(String title, String content, User user) {
-        this.title = title;
-        this.content = content;
-        this.user = user;
-    }
 }
