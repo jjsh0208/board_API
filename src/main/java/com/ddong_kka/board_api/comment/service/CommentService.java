@@ -59,4 +59,19 @@ public class CommentService {
         commentRepository.save(targetComment);
 
     }
+
+    public void deleteComment(Long id, String jwtToken) {
+
+        String userEmail = jwtUtil.getEmail(jwtToken);
+
+        User user = userRepository.findByEmail(userEmail).orElseThrow(()-> new UserNotFoundException("사용자를 찾을 수 없습니다 : "+ userEmail));
+
+        Comment targetComment = commentRepository.findById(id).orElseThrow(() -> new CommentNotFoundException("댓글을 찾을 수 없습니다 : ID = " + id));
+
+        if (!targetComment.getUser().equals(user)){
+            throw new UnauthorizedAccessException("권한이 없습니다.");
+        }
+
+        commentRepository.delete(targetComment);
+    }
 }
