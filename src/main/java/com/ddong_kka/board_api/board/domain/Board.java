@@ -29,9 +29,6 @@ public class Board {
     @Column(nullable = false)
     private int views = 0;
 
-    @Column(nullable = false)
-    private int reports = 0;
-
     @CreationTimestamp
     private Timestamp createAt;
 

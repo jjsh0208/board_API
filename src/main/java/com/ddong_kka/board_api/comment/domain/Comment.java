@@ -22,9 +22,8 @@ public class Comment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long commentId;
 
+    @Column(length = 100 , nullable = false)
     private String content;
-
-    private int reports;
 
     @CreationTimestamp
     private Timestamp createAt;
@@ -39,5 +38,12 @@ public class Comment {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "boardId", nullable = false)
     private Board board;
+
+    @Builder
+    public Comment( String content, User user, Board board) {
+        this.content = content;
+        this.user = user;
+        this.board = board;
+    }
 
 }
