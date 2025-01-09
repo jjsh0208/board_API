@@ -1,7 +1,6 @@
 package com.ddong_kka.board_api.board.dto;
 
 import com.ddong_kka.board_api.board.domain.Board;
-import com.ddong_kka.board_api.user.domain.User;
 import lombok.*;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)

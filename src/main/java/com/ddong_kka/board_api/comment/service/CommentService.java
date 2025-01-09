@@ -2,7 +2,6 @@ package com.ddong_kka.board_api.comment.service;
 
 import com.ddong_kka.board_api.Config.JWT.JwtUtil;
 import com.ddong_kka.board_api.board.domain.Board;
-import com.ddong_kka.board_api.board.dto.BoardListDto;
 import com.ddong_kka.board_api.board.repository.BoardRepository;
 import com.ddong_kka.board_api.comment.domain.Comment;
 import com.ddong_kka.board_api.comment.dto.CommentListDto;
@@ -30,16 +29,17 @@ public class CommentService {
     private final UserRepository userRepository;
     private final JwtUtil jwtUtil;
 
-//    public Page<CommentListDto> getList(Long id , int page) {
-//
-//        if (page < 0){
-//            throw new IllegalArgumentException("페이지 번호는 0 이상이어야 합니다.");
-//        }
-//
-//        Pageable pageable = PageRequest.of(page, 10, Sort.by(Sort.Order.desc("createAt")));
-//        Page<Comment> boards = commentRepository.findAllByBoardId(id, pageable);
-//        return boards.map(CommentListDto::new);
-//    }
+    public Page<CommentListDto> getList(Long id , int page) {
+
+        if (page < 0){
+            throw new IllegalArgumentException("페이지 번호는 0 이상이어야 합니다.");
+        }
+        Board targetBoard = boardRepository.findById(id).orElseThrow(() -> new BoardNotFoundException("게시글을 찾을 수 없습니다 : ID = " + id));
+
+        Pageable pageable = PageRequest.of(page, 10, Sort.by(Sort.Order.desc("createAt")));
+        Page<Comment> boards = commentRepository.findAllByBoard(targetBoard, pageable);
+        return boards.map(CommentListDto::new);
+    }
 
 
 
