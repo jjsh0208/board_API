@@ -2,8 +2,10 @@ package com.ddong_kka.board_api.comment.service;
 
 import com.ddong_kka.board_api.Config.JWT.JwtUtil;
 import com.ddong_kka.board_api.board.domain.Board;
+import com.ddong_kka.board_api.board.dto.BoardListDto;
 import com.ddong_kka.board_api.board.repository.BoardRepository;
 import com.ddong_kka.board_api.comment.domain.Comment;
+import com.ddong_kka.board_api.comment.dto.CommentListDto;
 import com.ddong_kka.board_api.comment.dto.CommentWriteDto;
 import com.ddong_kka.board_api.comment.repository.CommentRepository;
 import com.ddong_kka.board_api.exception.BoardNotFoundException;
@@ -13,6 +15,10 @@ import com.ddong_kka.board_api.exception.UserNotFoundException;
 import com.ddong_kka.board_api.user.domain.User;
 import com.ddong_kka.board_api.user.repository.UserRepository;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -23,6 +29,19 @@ public class CommentService {
     private final BoardRepository boardRepository;
     private final UserRepository userRepository;
     private final JwtUtil jwtUtil;
+
+//    public Page<CommentListDto> getList(Long id , int page) {
+//
+//        if (page < 0){
+//            throw new IllegalArgumentException("페이지 번호는 0 이상이어야 합니다.");
+//        }
+//
+//        Pageable pageable = PageRequest.of(page, 10, Sort.by(Sort.Order.desc("createAt")));
+//        Page<Comment> boards = commentRepository.findAllByBoardId(id, pageable);
+//        return boards.map(CommentListDto::new);
+//    }
+
+
 
     public void saveComment(CommentWriteDto commentWriteDto, Long id, String jwtToken) {
         // create에서 사용하는 id는 게시글의 id 이다.
@@ -74,4 +93,6 @@ public class CommentService {
 
         commentRepository.delete(targetComment);
     }
+
+
 }

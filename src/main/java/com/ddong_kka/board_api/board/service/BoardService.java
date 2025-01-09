@@ -100,10 +100,6 @@ public class BoardService {
 
     public void deleteBoard(Long id, String jwtToken) {
 
-        if (deleteBoardRepository.existsByBoardId(id)){
-            throw new BoardAlreadyDeletedException("이미 삭제된 게시글입니다.");
-        }
-
         String userEmail = jwtUtil.getEmail(jwtToken);
 
         User user = userRepository.findByEmail(userEmail).orElseThrow(()-> new UserNotFoundException("사용자를 찾을 수 없습니다 : "+ userEmail));
@@ -112,6 +108,10 @@ public class BoardService {
 
         if (!targetBoard.getUser().equals(user)){
             throw new UnauthorizedAccessException("권한이 없습니다.");
+        }
+
+        if (deleteBoardRepository.existsByBoard(targetBoard)){
+            throw new BoardAlreadyDeletedException("이미 삭제된 게시글입니다.");
         }
 
         DeleteBoard deleteBoard = DeleteBoard.builder()

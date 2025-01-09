@@ -1,6 +1,8 @@
 package com.ddong_kka.board_api.comment.controller;
 
 import com.ddong_kka.board_api.board.controller.BoardRestController;
+import com.ddong_kka.board_api.board.dto.BoardListDto;
+import com.ddong_kka.board_api.comment.dto.CommentListDto;
 import com.ddong_kka.board_api.comment.dto.CommentWriteDto;
 import com.ddong_kka.board_api.comment.service.CommentService;
 import com.ddong_kka.board_api.exception.CommentNotFoundException;
@@ -10,6 +12,7 @@ import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -25,6 +28,33 @@ public class CommentRestController {
 
     private final CommentService commentService;
     private final Logger logger = LoggerFactory.getLogger(BoardRestController.class);
+
+
+//    @GetMapping("/{id}")
+//    public ResponseEntity<?> commentList(@PathVariable("id") Long id,
+//                                         @RequestParam(value="page", defaultValue = "0") int page){
+//        try{
+//            Page<CommentListDto> paging = commentService.getList(id,page);
+//
+//            return ResponseEntity.ok(paging);
+//        } catch(IllegalArgumentException e){
+//            logger.warn("Invalid page number - {}", e.getMessage());
+//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+//                    .body(Map.of(
+//                            "status", HttpStatus.UNAUTHORIZED.value(),
+//                            "error", "Invalid page number",
+//                            "message", e.getMessage()
+//                    ));
+//        } catch (Exception e){
+//            logger.error("Unexpected Error - {}", e.getMessage());
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+//                    .body(Map.of(
+//                            "status", HttpStatus.INTERNAL_SERVER_ERROR.value(),
+//                            "error", "Unexpected Error",
+//                            "message", "예상치 못한 오류가 발생하였습니다."
+//                    ));
+//        }
+//    }
 
 
     @PostMapping("/{id}")
