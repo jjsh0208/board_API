@@ -1,9 +1,9 @@
 package com.ddong_kka.board_api.board.controller;
 
-import com.ddong_kka.board_api.board.domain.Board;
 import com.ddong_kka.board_api.board.dto.BoardListDto;
 import com.ddong_kka.board_api.board.dto.BoardWriteDto;
 import com.ddong_kka.board_api.board.service.BoardService;
+import com.ddong_kka.board_api.exception.BoardAlreadyDeletedException;
 import com.ddong_kka.board_api.exception.BoardNotFoundException;
 import com.ddong_kka.board_api.exception.UnauthorizedAccessException;
 import com.ddong_kka.board_api.exception.UserNotFoundException;
@@ -30,7 +30,7 @@ public class BoardRestController {
     private final Logger logger =  LoggerFactory.getLogger(BoardRestController.class);
 
 
-    @GetMapping("/")
+    @GetMapping("")
     public ResponseEntity<?> boardList(@RequestParam(value="page", defaultValue = "0") int page) {
         try{
             Page<BoardListDto> paging = boardService.getList(page);
@@ -86,7 +86,7 @@ public class BoardRestController {
         }
     }
 
-    @PostMapping({"/", ""})
+    @PostMapping("")
     public ResponseEntity<?> write(@Valid @RequestBody BoardWriteDto boardWriteDto
                                     , BindingResult bindingResult
                                     ,@RequestHeader("Authorization") String authorizationHeader){
@@ -255,6 +255,14 @@ public class BoardRestController {
                     .body(Map.of(
                             "status", HttpStatus.UNAUTHORIZED.value(),
                             "error", "Missing JWT Token",
+                            "message", e.getMessage()
+                    ));
+        } catch (BoardAlreadyDeletedException e){
+            logger.warn("Board Already Delete - {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of(
+                            "status", HttpStatus.NOT_FOUND.value(),
+                            "error", "Board Already Delete",
                             "message", e.getMessage()
                     ));
         } catch (UserNotFoundException e) {

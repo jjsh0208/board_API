@@ -39,6 +39,11 @@ public class DeleteBoard {
     @JoinColumn(name = "userId", nullable = false)
     private User user;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "boardId", nullable = false)
+    private Board board;
+
+
     @Builder
     public DeleteBoard(Board board) {
         this.title = board.getTitle();
@@ -46,5 +51,6 @@ public class DeleteBoard {
         this.views = board.getViews();
         this.createAt = board.getCreateAt();
         this.user = board.getUser();
+        this.board = board;
     }
 }

@@ -3,7 +3,6 @@ package com.ddong_kka.board_api.comment.controller;
 import com.ddong_kka.board_api.board.controller.BoardRestController;
 import com.ddong_kka.board_api.comment.dto.CommentWriteDto;
 import com.ddong_kka.board_api.comment.service.CommentService;
-import com.ddong_kka.board_api.exception.BoardNotFoundException;
 import com.ddong_kka.board_api.exception.CommentNotFoundException;
 import com.ddong_kka.board_api.exception.UnauthorizedAccessException;
 import com.ddong_kka.board_api.exception.UserNotFoundException;

@@ -6,6 +6,9 @@ import com.ddong_kka.board_api.board.dto.BoardDetailDto;
 import com.ddong_kka.board_api.board.dto.BoardListDto;
 import com.ddong_kka.board_api.board.dto.BoardWriteDto;
 import com.ddong_kka.board_api.board.repository.BoardRepository;
+import com.ddong_kka.board_api.deleteBoard.domain.DeleteBoard;
+import com.ddong_kka.board_api.deleteBoard.repository.DeleteBoardRepository;
+import com.ddong_kka.board_api.exception.BoardAlreadyDeletedException;
 import com.ddong_kka.board_api.exception.BoardNotFoundException;
 import com.ddong_kka.board_api.exception.UnauthorizedAccessException;
 import com.ddong_kka.board_api.exception.UserNotFoundException;
@@ -27,6 +30,7 @@ public class BoardService {
 
     private final BoardRepository boardRepository;
     private final UserRepository userRepository;
+    private final DeleteBoardRepository deleteBoardRepository;
     private final JwtUtil jwtUtil;
 
     public Page<BoardListDto> getList(int page){
@@ -35,10 +39,8 @@ public class BoardService {
             throw new IllegalArgumentException("페이지 번호는 0 이상이어야 합니다.");
         }
 
-        List<Sort.Order> sorts = new ArrayList<>();
-        sorts.add(Sort.Order.desc("createAt"));
-        Pageable pageable = PageRequest.of(page, 10, Sort.by(sorts));
-        Page<Board> boards = boardRepository.findAll(pageable);
+        Pageable pageable = PageRequest.of(page, 10, Sort.by(Sort.Order.desc("createAt")));
+        Page<Board> boards = boardRepository.findActiveBoards(pageable);
         return boards.map(BoardListDto::new);
     }
 
@@ -49,7 +51,7 @@ public class BoardService {
             throw new IllegalArgumentException("ID는 null일 수 없습니다.");
         }
 
-        Board board =  boardRepository.findById(id)
+        Board board =  boardRepository.findActiveBoardById(id)
                 .orElseThrow(() -> new BoardNotFoundException("게시글을 찾을 수 없습니다 : ID = " + id));
 
         board.setViews(board.getViews() + 1);
@@ -98,6 +100,10 @@ public class BoardService {
 
     public void deleteBoard(Long id, String jwtToken) {
 
+        if (deleteBoardRepository.existsByBoardId(id)){
+            throw new BoardAlreadyDeletedException("이미 삭제된 게시글입니다.");
+        }
+
         String userEmail = jwtUtil.getEmail(jwtToken);
 
         User user = userRepository.findByEmail(userEmail).orElseThrow(()-> new UserNotFoundException("사용자를 찾을 수 없습니다 : "+ userEmail));
@@ -108,8 +114,11 @@ public class BoardService {
             throw new UnauthorizedAccessException("권한이 없습니다.");
         }
 
-        boardRepository.delete(targetBoard);
+        DeleteBoard deleteBoard = DeleteBoard.builder()
+                .board(targetBoard)
+                .build();
 
+        deleteBoardRepository.save(deleteBoard);
     }
 
 }
