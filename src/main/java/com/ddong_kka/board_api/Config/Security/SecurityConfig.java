@@ -3,7 +3,10 @@ package com.ddong_kka.board_api.Config.Security;
 
 import com.ddong_kka.board_api.Config.JWT.JwtAuthenticationFilter;
 import com.ddong_kka.board_api.Config.JWT.JwtCreateHandler;
+import com.ddong_kka.board_api.Config.JWT.JwtLogoutFilter;
 import com.ddong_kka.board_api.Config.JWT.JwtUtil;
+import com.ddong_kka.board_api.Config.JWT.domain.RefreshToken;
+import com.ddong_kka.board_api.Config.JWT.repository.RefreshTokenRepository;
 import com.ddong_kka.board_api.Config.auth.JsonLoginFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -17,6 +20,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.logout.LogoutFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 
@@ -30,10 +34,12 @@ public class SecurityConfig {
 
     private final JwtCreateHandler jwtCreateHandler;
     private final JwtUtil jwtUtil;
+    private final RefreshTokenRepository refreshTokenRepository;
 
-    public SecurityConfig(JwtCreateHandler jwtCreateHandler, JwtUtil jwtUtil) {
+    public SecurityConfig(JwtCreateHandler jwtCreateHandler, JwtUtil jwtUtil, RefreshTokenRepository refreshTokenRepository) {
         this.jwtCreateHandler = jwtCreateHandler;
         this.jwtUtil = jwtUtil;
+        this.refreshTokenRepository = refreshTokenRepository;
     }
 
     @Bean
@@ -56,6 +62,7 @@ public class SecurityConfig {
                 .addFilterBefore(new JwtAuthenticationFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(new JsonLoginFilter(authenticationManager(http.getSharedObject(AuthenticationConfiguration.class))
                         , jwtCreateHandler), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(new JwtLogoutFilter(jwtUtil,refreshTokenRepository), LogoutFilter.class)
                 .cors(corsCustomizer -> corsCustomizer.configurationSource(corsConfigurationSource())) // cors 설정 메서드 적용
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // 시큐리티 세션 사용안함
                 .authorizeHttpRequests(authorizationHttpRequest ->

@@ -39,7 +39,6 @@ public class JsonLoginFilter extends UsernamePasswordAuthenticationFilter {
             String email = loginData.get("email"); // 이메일 추출
             String password = loginData.get("password"); // 비밀번호 추출
 
-            System.out.println("email : " + email +"\n password : " + password);
             // 1-2. email 과 password 를 기반으로 인증 token 생성
             UsernamePasswordAuthenticationToken authRequest = new UsernamePasswordAuthenticationToken(email,password);
 

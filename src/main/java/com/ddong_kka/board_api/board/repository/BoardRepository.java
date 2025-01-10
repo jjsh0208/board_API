@@ -14,8 +14,6 @@ public interface BoardRepository extends JpaRepository<Board, Long> {
     @Query("SELECT b FROM Board b WHERE b.boardId NOT IN (SELECT db.board.boardId FROM DeleteBoard db ) ORDER BY b.createAt DESC")
     Page<Board> findActiveBoards(Pageable pageable);
 
-
-
     @Query("SELECT b FROM Board b WHERE b.boardId = :id AND b.boardId NOT IN (SELECT db.board.boardId FROM DeleteBoard db)")
     Optional<Board> findActiveBoardById(@Param("id") Long id);
 
