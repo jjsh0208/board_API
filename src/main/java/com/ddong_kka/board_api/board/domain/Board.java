@@ -35,7 +35,7 @@ public class Board {
     @UpdateTimestamp
     private Timestamp modifyAt;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     @JoinColumn(name = "userId", nullable = false)
     private User user;
 

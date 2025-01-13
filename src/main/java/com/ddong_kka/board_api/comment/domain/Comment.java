@@ -31,13 +31,13 @@ public class Comment {
     @UpdateTimestamp
     private Timestamp modifyAt;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     @JoinColumn(name = "userId", nullable = false)
-    private User user;
+    private User user; // 작성자
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     @JoinColumn(name = "boardId", nullable = false)
-    private Board board;
+    private Board board; // 부모 게시글
 
     @Builder
     public Comment( String content, User user, Board board) {
