@@ -1,6 +1,6 @@
 package com.ddong_kka.board_api.board.controller;
 
-import com.ddong_kka.board_api.board.dto.BoardListDto;
+import com.ddong_kka.board_api.board.dto.BoardResponseDto;
 import com.ddong_kka.board_api.board.dto.BoardWriteDto;
 import com.ddong_kka.board_api.board.service.BoardService;
 import com.ddong_kka.board_api.exception.BoardAlreadyDeletedException;
@@ -33,7 +33,7 @@ public class BoardRestController {
     @GetMapping("")
     public ResponseEntity<?> boardList(@RequestParam(value="page", defaultValue = "0") int page) {
         try{
-            Page<BoardListDto> paging = boardService.getList(page);
+            Page<BoardResponseDto> paging = boardService.getList(page);
 
             return ResponseEntity.ok(paging);
         } catch(IllegalArgumentException e){

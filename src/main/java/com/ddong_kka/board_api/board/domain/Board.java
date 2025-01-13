@@ -39,7 +39,6 @@ public class Board {
     @JoinColumn(name = "userId", nullable = false)
     private User user;
 
-
     @Builder
     public Board(String title, String content, User user) {
         this.title = title;

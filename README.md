@@ -25,4 +25,3 @@ JWT 기반 게시글 관리 API
 - **서버**: Apache Tomcat 9.0
 
 
-

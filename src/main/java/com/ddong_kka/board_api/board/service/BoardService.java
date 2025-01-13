@@ -2,8 +2,7 @@ package com.ddong_kka.board_api.board.service;
 
 import com.ddong_kka.board_api.Config.JWT.JwtUtil;
 import com.ddong_kka.board_api.board.domain.Board;
-import com.ddong_kka.board_api.board.dto.BoardDetailDto;
-import com.ddong_kka.board_api.board.dto.BoardListDto;
+import com.ddong_kka.board_api.board.dto.BoardResponseDto;
 import com.ddong_kka.board_api.board.dto.BoardWriteDto;
 import com.ddong_kka.board_api.board.repository.BoardRepository;
 import com.ddong_kka.board_api.deleteBoard.domain.DeleteBoard;
@@ -21,9 +20,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-
 @Service
 @AllArgsConstructor
 public class BoardService {
@@ -33,7 +29,7 @@ public class BoardService {
     private final DeleteBoardRepository deleteBoardRepository;
     private final JwtUtil jwtUtil;
 
-    public Page<BoardListDto> getList(int page){
+    public Page<BoardResponseDto> getList(int page){
 
         if (page < 0){
             throw new IllegalArgumentException("페이지 번호는 0 이상이어야 합니다.");
@@ -41,11 +37,11 @@ public class BoardService {
 
         Pageable pageable = PageRequest.of(page, 10, Sort.by(Sort.Order.desc("createAt")));
         Page<Board> boards = boardRepository.findActiveBoards(pageable);
-        return boards.map(BoardListDto::new);
+        return boards.map(BoardResponseDto::new);
     }
 
 
-    public BoardDetailDto getDetail(Long id) {
+    public BoardResponseDto getDetail(Long id) {
 
         if (id == null){
             throw new IllegalArgumentException("ID는 null일 수 없습니다.");
@@ -57,10 +53,8 @@ public class BoardService {
         board.setViews(board.getViews() + 1);
         boardRepository.save(board);
 
-        BoardDetailDto response = BoardDetailDto.builder()
-                .title(board.getTitle())
-                .content(board.getContent())
-                .user(board.getUser())
+        BoardResponseDto response = BoardResponseDto.builder()
+                .board(board)
                 .build();
 
         return response;
