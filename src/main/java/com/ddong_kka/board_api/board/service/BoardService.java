@@ -11,6 +11,9 @@ import com.ddong_kka.board_api.exception.BoardAlreadyDeletedException;
 import com.ddong_kka.board_api.exception.BoardNotFoundException;
 import com.ddong_kka.board_api.exception.UnauthorizedAccessException;
 import com.ddong_kka.board_api.exception.UserNotFoundException;
+import com.ddong_kka.board_api.image.domain.Image;
+import com.ddong_kka.board_api.image.repository.ImageRepository;
+import com.ddong_kka.board_api.image.service.ImageService;
 import com.ddong_kka.board_api.user.domain.User;
 import com.ddong_kka.board_api.user.repository.UserRepository;
 import lombok.AllArgsConstructor;
@@ -19,6 +22,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 
 @Service
 @AllArgsConstructor
@@ -27,6 +34,8 @@ public class BoardService {
     private final BoardRepository boardRepository;
     private final UserRepository userRepository;
     private final DeleteBoardRepository deleteBoardRepository;
+    private final ImageRepository imageRepository;
+    private final ImageService imageService;
     private final JwtUtil jwtUtil;
 
     public Page<BoardResponseDto> getList(int page){
@@ -60,10 +69,12 @@ public class BoardService {
         return response;
     }
 
-    public Long saveBoard(BoardWriteDto boardWriteDto,String jwtToken){
+    @Transactional
+    public Long saveBoard(BoardWriteDto boardWriteDto, MultipartFile imageFile, String jwtToken){
         String userEmail = jwtUtil.getEmail(jwtToken);
 
-        User user = userRepository.findByEmail(userEmail).orElseThrow(()-> new UserNotFoundException("사용자를 찾을 수 없습니다 : "+ userEmail));
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(()-> new UserNotFoundException("사용자를 찾을 수 없습니다 : "+ userEmail));
 
         Board board = Board.builder()
                 .title(boardWriteDto.getTitle())
@@ -71,15 +82,39 @@ public class BoardService {
                 .user(user)
                 .build();
 
-        return boardRepository.save(board).getBoardId();
+        boardRepository.save(board);
+
+        if(imageFile != null && !imageFile.isEmpty()){
+            try {
+                String imagePath = imageService.saveFile(imageFile);
+                String originalFileName = imageFile.getOriginalFilename();
+                String imageSize = String.valueOf(imageFile.getSize());
+
+                Image image = Image.builder()
+                        .originName(originalFileName)
+                        .saveName(imagePath)
+                        .imagePath(imagePath)
+                        .imageSize(imageSize)
+                        .board(board)
+                        .build();
+
+                imageRepository.save(image);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        return board.getBoardId();
     }
 
     public Long updateBoard(BoardWriteDto boardWriteDto, Long id, String jwtToken) {
         String userEmail = jwtUtil.getEmail(jwtToken);
 
-        User user = userRepository.findByEmail(userEmail).orElseThrow(()-> new UserNotFoundException("사용자를 찾을 수 없습니다 : "+ userEmail));
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(()-> new UserNotFoundException("사용자를 찾을 수 없습니다 : "+ userEmail));
 
-        Board targetBoard = boardRepository.findById(id).orElseThrow(() -> new BoardNotFoundException("게시글을 찾을 수 없습니다 : ID = " + id));
+        Board targetBoard = boardRepository.findById(id)
+                .orElseThrow(() -> new BoardNotFoundException("게시글을 찾을 수 없습니다 : ID = " + id));
 
         if (!targetBoard.getUser().equals(user)){
             throw new UnauthorizedAccessException("권한이 없습니다.");
@@ -96,9 +131,11 @@ public class BoardService {
 
         String userEmail = jwtUtil.getEmail(jwtToken);
 
-        User user = userRepository.findByEmail(userEmail).orElseThrow(()-> new UserNotFoundException("사용자를 찾을 수 없습니다 : "+ userEmail));
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(()-> new UserNotFoundException("사용자를 찾을 수 없습니다 : "+ userEmail));
 
-        Board targetBoard = boardRepository.findById(id).orElseThrow(() -> new BoardNotFoundException("게시글을 찾을 수 없습니다 : ID = " + id));
+        Board targetBoard = boardRepository.findById(id)
+                .orElseThrow(() -> new BoardNotFoundException("게시글을 찾을 수 없습니다 : ID = " + id));
 
         if (!targetBoard.getUser().equals(user)){
             throw new UnauthorizedAccessException("권한이 없습니다.");

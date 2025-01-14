@@ -17,6 +17,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Map;
@@ -86,10 +87,13 @@ public class BoardRestController {
         }
     }
 
-    @PostMapping("")
-    public ResponseEntity<?> write(@Valid @RequestBody BoardWriteDto boardWriteDto
-                                    , BindingResult bindingResult
-                                    ,@RequestHeader("Authorization") String authorizationHeader){
+    @PostMapping(value = "")
+    public ResponseEntity<?> write(
+            @RequestPart("boardWriteDto") @Valid BoardWriteDto boardWriteDto, // JSON 데이터
+            BindingResult bindingResult,
+            @RequestPart("imageFile") MultipartFile imageFile, // 이미지 파일
+            @RequestHeader("Authorization") String authorizationHeader
+    ){
 
         String jwtToken = null;
         try{
@@ -117,12 +121,12 @@ public class BoardRestController {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
             }
 
-            Long board_id = boardService.saveBoard(boardWriteDto,jwtToken);
+            Long board_id = boardService.saveBoard(boardWriteDto,imageFile,jwtToken);
 
 
             Map<String,Object> successResponse = Map.of(
                     "message", "게시글 작성 성공",
-                    "board_id", board_id
+                    "board_id", "1"
             );
 
             return ResponseEntity.ok(successResponse);
@@ -143,7 +147,6 @@ public class BoardRestController {
                             "message", "예상치 못한 오류가 발생하였습니다."
                     ));
         }
-
     }
 
     @PutMapping("/{id}")
