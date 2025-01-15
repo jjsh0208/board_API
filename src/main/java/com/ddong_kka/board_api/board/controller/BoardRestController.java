@@ -265,14 +265,6 @@ public class BoardRestController {
                             "error", "Missing JWT Token",
                             "message", e.getMessage()
                     ));
-        } catch (BoardAlreadyDeletedException e){
-            logger.warn("Board Already Delete - {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Map.of(
-                            "status", HttpStatus.NOT_FOUND.value(),
-                            "error", "Board Already Delete",
-                            "message", e.getMessage()
-                    ));
         } catch (UserNotFoundException e) {
             logger.warn("User NotFound - {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
