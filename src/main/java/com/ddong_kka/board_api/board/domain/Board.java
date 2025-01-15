@@ -35,6 +35,9 @@ public class Board {
     @UpdateTimestamp
     private Timestamp modifyAt;
 
+    @Column(nullable = false)
+    private Boolean isDeleted;
+
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     @JoinColumn(name = "userId", nullable = false)
     private User user;
@@ -44,5 +47,6 @@ public class Board {
         this.title = title;
         this.content = content;
         this.user = user;
+        this.isDeleted = false;
     }
 }

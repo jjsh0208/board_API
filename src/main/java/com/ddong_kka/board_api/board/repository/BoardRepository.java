@@ -11,10 +11,10 @@ import java.util.Optional;
 
 public interface BoardRepository extends JpaRepository<Board, Long> {
 
-    @Query("SELECT b FROM Board b WHERE b.boardId NOT IN (SELECT db.board.boardId FROM DeleteBoard db ) ORDER BY b.createAt DESC")
+    @Query("SELECT b FROM Board b WHERE b.isDeleted = false ORDER BY b.createAt DESC")
     Page<Board> findActiveBoards(Pageable pageable);
 
-    @Query("SELECT b FROM Board b WHERE b.boardId = :id AND b.boardId NOT IN (SELECT db.board.boardId FROM DeleteBoard db)")
+    @Query("SELECT b FROM Board b WHERE b.boardId = :id AND b.isDeleted = false")
     Optional<Board> findActiveBoardById(@Param("id") Long id);
 
 }

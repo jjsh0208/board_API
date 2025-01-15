@@ -5,8 +5,6 @@ import com.ddong_kka.board_api.board.domain.Board;
 import com.ddong_kka.board_api.board.dto.BoardResponseDto;
 import com.ddong_kka.board_api.board.dto.BoardWriteDto;
 import com.ddong_kka.board_api.board.repository.BoardRepository;
-import com.ddong_kka.board_api.deleteBoard.domain.DeleteBoard;
-import com.ddong_kka.board_api.deleteBoard.repository.DeleteBoardRepository;
 import com.ddong_kka.board_api.exception.*;
 import com.ddong_kka.board_api.image.domain.Image;
 import com.ddong_kka.board_api.image.repository.ImageRepository;
@@ -31,7 +29,6 @@ public class BoardService {
 
     private final BoardRepository boardRepository;
     private final UserRepository userRepository;
-    private final DeleteBoardRepository deleteBoardRepository;
     private final ImageRepository imageRepository;
     private final ImageService imageService;
     private final JwtUtil jwtUtil;
@@ -147,15 +144,9 @@ public class BoardService {
             throw new UnauthorizedAccessException("권한이 없습니다.");
         }
 
-        if (deleteBoardRepository.existsByBoard(targetBoard)){
-            throw new BoardAlreadyDeletedException("이미 삭제된 게시글입니다.");
-        }
+        targetBoard.setIsDeleted(true);
 
-        DeleteBoard deleteBoard = DeleteBoard.builder()
-                .board(targetBoard)
-                .build();
-
-        deleteBoardRepository.save(deleteBoard);
+        boardRepository.save(targetBoard);
     }
 
 }
