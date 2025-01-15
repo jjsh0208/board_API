@@ -7,10 +7,7 @@ import com.ddong_kka.board_api.board.dto.BoardWriteDto;
 import com.ddong_kka.board_api.board.repository.BoardRepository;
 import com.ddong_kka.board_api.deleteBoard.domain.DeleteBoard;
 import com.ddong_kka.board_api.deleteBoard.repository.DeleteBoardRepository;
-import com.ddong_kka.board_api.exception.BoardAlreadyDeletedException;
-import com.ddong_kka.board_api.exception.BoardNotFoundException;
-import com.ddong_kka.board_api.exception.UnauthorizedAccessException;
-import com.ddong_kka.board_api.exception.UserNotFoundException;
+import com.ddong_kka.board_api.exception.*;
 import com.ddong_kka.board_api.image.domain.Image;
 import com.ddong_kka.board_api.image.repository.ImageRepository;
 import com.ddong_kka.board_api.image.service.ImageService;
@@ -74,7 +71,7 @@ public class BoardService {
     }
 
     @Transactional
-    public Long saveBoard(BoardWriteDto boardWriteDto, MultipartFile imageFile, String jwtToken){
+    public Long saveBoard(BoardWriteDto boardWriteDto, List<MultipartFile> imageFiles, String jwtToken){
         String userEmail = jwtUtil.getEmail(jwtToken);
 
         User user = userRepository.findByEmail(userEmail)
@@ -88,23 +85,28 @@ public class BoardService {
 
         boardRepository.save(board);
 
-        if(imageFile != null && !imageFile.isEmpty()){
-            try {
-                String imagePath = imageService.saveFile(imageFile);
-                String originalFileName = imageFile.getOriginalFilename();
-                String imageSize = String.valueOf(imageFile.getSize());
+        // 이미지 파일 처리
+        if (imageFiles != null && !imageFiles.isEmpty()) {
+            for (MultipartFile imageFile : imageFiles) {
+                try {
+                    // 이미지 파일 저장 및 경로 반환
+                    String imagePath = imageService.saveFile(imageFile);
+                    String originalFileName = imageFile.getOriginalFilename();
+                    String imageSize = String.valueOf(imageFile.getSize());
 
-                Image image = Image.builder()
-                        .originName(originalFileName)
-                        .saveName(imagePath)
-                        .imagePath(imagePath)
-                        .imageSize(imageSize)
-                        .board(board)
-                        .build();
+                    // Image 엔티티 생성 및 저장
+                    Image image = Image.builder()
+                            .originName(originalFileName)
+                            .saveName(imagePath)
+                            .imagePath(imagePath)
+                            .imageSize(imageSize)
+                            .board(board)
+                            .build();
 
-                imageRepository.save(image);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
+                    imageRepository.save(image);
+                } catch (IOException e) {
+                    throw new ImageSaveException("이미지 저장 중 오류가 발생했습니다: " + imageFile.getOriginalFilename());
+                }
             }
         }
 

@@ -3,10 +3,7 @@ package com.ddong_kka.board_api.board.controller;
 import com.ddong_kka.board_api.board.dto.BoardResponseDto;
 import com.ddong_kka.board_api.board.dto.BoardWriteDto;
 import com.ddong_kka.board_api.board.service.BoardService;
-import com.ddong_kka.board_api.exception.BoardAlreadyDeletedException;
-import com.ddong_kka.board_api.exception.BoardNotFoundException;
-import com.ddong_kka.board_api.exception.UnauthorizedAccessException;
-import com.ddong_kka.board_api.exception.UserNotFoundException;
+import com.ddong_kka.board_api.exception.*;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
@@ -91,7 +88,7 @@ public class BoardRestController {
     public ResponseEntity<?> write(
             @RequestPart("boardWriteDto") @Valid BoardWriteDto boardWriteDto, // JSON 데이터
             BindingResult bindingResult,
-            @RequestPart("imageFile") MultipartFile imageFile, // 이미지 파일
+            @RequestPart("imageFile") List<MultipartFile> imageFiles, // 이미지 파일
             @RequestHeader("Authorization") String authorizationHeader
     ){
 
@@ -121,7 +118,7 @@ public class BoardRestController {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
             }
 
-            Long board_id = boardService.saveBoard(boardWriteDto,imageFile,jwtToken);
+            Long board_id = boardService.saveBoard(boardWriteDto,imageFiles,jwtToken);
 
 
             Map<String,Object> successResponse = Map.of(
@@ -130,7 +127,7 @@ public class BoardRestController {
             );
 
             return ResponseEntity.ok(successResponse);
-        }  catch(IllegalArgumentException e){
+        } catch(IllegalArgumentException e){
             logger.warn("JWT Token NotFond - {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(Map.of(
@@ -138,7 +135,15 @@ public class BoardRestController {
                             "error", "Missing JWT Token",
                             "message", e.getMessage()
                     ));
-        }  catch (Exception e) {
+        } catch (ImageSaveException e){
+            logger.warn("Image Saving Error : {}",e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of(
+                            "status", HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                            "error", "Image Saving Error",
+                            "message", e.getMessage()
+                    ));
+        } catch (Exception e) {
             logger.error("Unexpected Error - {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of(
