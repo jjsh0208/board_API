@@ -126,7 +126,7 @@ public class BoardRestController {
 
             Map<String,Object> successResponse = Map.of(
                     "message", "게시글 작성 성공",
-                    "board_id", "1"
+                    "board_id", board_id
             );
 
             return ResponseEntity.ok(successResponse);

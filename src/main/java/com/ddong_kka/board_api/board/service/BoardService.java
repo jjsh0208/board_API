@@ -26,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.List;
 
 @Service
 @AllArgsConstructor
@@ -59,11 +60,14 @@ public class BoardService {
         Board board =  boardRepository.findActiveBoardById(id)
                 .orElseThrow(() -> new BoardNotFoundException("게시글을 찾을 수 없습니다 : ID = " + id));
 
+        List<Image> images = imageRepository.findAllByBoard(board);
+
         board.setViews(board.getViews() + 1);
         boardRepository.save(board);
 
         BoardResponseDto response = BoardResponseDto.builder()
                 .board(board)
+                .images(images)
                 .build();
 
         return response;
