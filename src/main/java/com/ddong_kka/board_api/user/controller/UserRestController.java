@@ -54,10 +54,12 @@ public class UserRestController {
             userService.saveUser(userRegisterDto);
 
             Map<String,Object> successResponse = Map.of(
+                    "status" , "success",
                     "message", "회원가입 성공"
             );
 
-            return ResponseEntity.ok().body(successResponse);
+            // 상태 코드를 HttpStatus.CREATED로 변경
+            return ResponseEntity.status(HttpStatus.CREATED).body(successResponse);
         } catch (DuplicateEmailException e) {
             logger.warn("duplicate e-mail - {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.FORBIDDEN)

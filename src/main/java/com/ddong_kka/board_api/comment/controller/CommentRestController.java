@@ -94,7 +94,7 @@ public class CommentRestController {
                     "message", "댓글 작성 성공"
             );
 
-            return ResponseEntity.ok(successResponse);
+            return ResponseEntity.status(HttpStatus.CREATED).body(successResponse);
         } catch(IllegalArgumentException e){
             logger.warn("JWT Token NotFond - {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)

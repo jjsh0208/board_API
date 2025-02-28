@@ -255,7 +255,7 @@ public class BoardRestController {
                     "message", "게시글 삭제 성공"
             );
 
-            return ResponseEntity.ok(successResponse);
+            return ResponseEntity.status(HttpStatus.CREATED).body(successResponse);
 
         } catch(IllegalArgumentException e){
             logger.warn("JWT Token NotFond - {}", e.getMessage());
