@@ -12,7 +12,6 @@ services:
       - "app-network"
     volumes:
       - postgres-data:/var/lib/postgresql/data
-    restart: always
 
   springboot:
     build: ./ # 스프링부트 앱이 있는 디렉토리
@@ -27,7 +26,6 @@ services:
       - postgres
     networks:
       - "app-network"
-    restart: always
 
 networks:
   app-network:
