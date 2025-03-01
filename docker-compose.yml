@@ -1,11 +1,11 @@
 services:
   postgres:
-    image : postgres:latest
+    image: postgres:latest
     container_name: postgres-container
     environment:
-      POSTGRES_USER : jjsh0208
-      POSTGRES_PASSWORD : Gusdk5540!
-      POSTGRES_DB : board_api
+      POSTGRES_USER: jjsh0208
+      POSTGRES_PASSWORD: Gusdk5540!
+      POSTGRES_DB: board_api
     ports:
       - "5432:5432"
     networks:
@@ -21,7 +21,7 @@ services:
       SPRING_DATASOURCE_USERNAME: jjsh0208
       SPRING_DATASOURCE_PASSWORD: Gusdk5540!
     ports:
-      - "8080"8080"
+      - "8080:8080"
     depends_on:
       - postgres
     networks:
