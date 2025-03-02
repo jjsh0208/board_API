@@ -52,7 +52,7 @@ public class UserRestController {
 
             Map<String,Object> successResponse = Map.of(
                     "status" , "success",
-                    "message", "회원가입 성공",
+                    "message", "회원가입 성공!!!!!",
                     "test" , "cd 동작 성공"
             );
 
