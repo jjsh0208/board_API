@@ -19,6 +19,10 @@ jobs:
       # gradlew 실행 권한 부여 및 빌드
       - name: gradle 실행 권한 부여 및 빌드
         run: |
+          echo "현재 디렉토리:"
+          pwd  # 현재 작업 디렉토리 출력
+          echo "디렉토리 목록:"
+          ls -l  # 현재 디렉토리 내 파일 목록 출력
           chmod +x ./gradlew
           ./gradlew clean build
 
