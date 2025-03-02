@@ -18,7 +18,7 @@ jobs:
 
       # Gradle 캐시 초기화
       - name: Gradle 캐시 초기화
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ~/.gradle/caches
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
