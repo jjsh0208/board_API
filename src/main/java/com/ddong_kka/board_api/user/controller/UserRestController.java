@@ -52,7 +52,8 @@ public class UserRestController {
 
             Map<String,Object> successResponse = Map.of(
                     "status" , "success",
-                    "message", "회원가입 성공"
+                    "message", "회원가입 성공",
+                    "test" , "cd 동작 성공"
             );
 
             // 상태 코드를 HttpStatus.CREATED로 변경
@@ -76,12 +77,4 @@ public class UserRestController {
         }
 
     }
-
-
-    @GetMapping("/test")
-    @ResponseBody
-    public String test(){
-        return "test 성공";
-    }
-
 }

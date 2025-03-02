@@ -67,7 +67,7 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // 시큐리티 세션 사용안함
                 .authorizeHttpRequests(authorizationHttpRequest ->
                         authorizationHttpRequest
-                                .requestMatchers("/api/v1/user/", "/api/v1/user" , "/api/v1/user/test").permitAll()
+                                .requestMatchers("/api/v1/user/", "/api/v1/user").permitAll()
                                 .requestMatchers("/api/v1/user/**").authenticated()
                                 .requestMatchers("/api/v1/board/**").authenticated()
                                 .requestMatchers("/api/comment/**").authenticated()
