@@ -54,14 +54,11 @@ jobs:
             sudo docker stop board_api || true
             sudo docker rm board_api || true
             
-            # 기존 이미지 삭제
-            sudo docker rmi ${{ secrets.DOCKER_USERNAME }}/board_api:latest || true
-            
             # 새 이미지 가져오기
             sudo docker pull ${{ secrets.DOCKER_USERNAME }}/board_api:${{ env.IMAGE_TAG }}
-            
+
             # 최신 태그 적용
             sudo docker tag ${{ secrets.DOCKER_USERNAME }}/board_api:${{ env.IMAGE_TAG }} ${{ secrets.DOCKER_USERNAME }}/board_api:latest
-            
+
             # 컨테이너 실행
             sudo docker run -d --name board_api --network board_network -p 8080:8080 ${{ secrets.DOCKER_USERNAME }}/board_api:latest
