@@ -52,8 +52,8 @@ jobs:
           key: ${{ secrets.EC2_PRIVATE_KEY }}
           script: |
             # 기존 컨테이너 종료 및 제거
-            sudo docker stop board_api || true
-            sudo docker rm board_api || true
+            sudo docker stop board-api || true
+            sudo docker rm board-api || true
             
             # 새 이미지 가져오기
             sudo docker pull ${{ secrets.DOCKER_USERNAME }}/board-api:${{ env.IMAGE_TAG }}
