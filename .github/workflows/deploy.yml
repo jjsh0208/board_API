@@ -35,6 +35,7 @@ jobs:
         run: |
           TAG_NAME=main-$(date +%Y%m%d-%H%M%S)-${GITHUB_SHA::7}
           echo "IMAGE_TAG=$TAG_NAME" >> $GITHUB_ENV  # 환경 변수 설정
+          echo "image_tag=$TAG_NAME" >> $GITHUB_OUTPUT # outputs에 저장
 
       - name: Docker 이미지 빌드
         run: |
@@ -54,14 +55,14 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_PRIVATE_KEY }}
-          envs: IMAGE_TAG
           script: |
+            IMAGE_TAG=${{ needs.build.outputs.image_tag }}  # build job에서 설정한 image_tag 값 참조
             echo "Deploying Docker image: ${{ secrets.DOCKER_USERNAME }}/board-api:${IMAGE_TAG}"
             
             sudo docker stop board-api || true
             sudo docker rm board-api || true
             
-            sudo docker pull ddongkka/board-api:${IMAGE_TAG}
+            sudo docker pull ${{ secrets.DOCKER_USERNAME }}/board-api:${IMAGE_TAG}
             
             sudo docker images
             
