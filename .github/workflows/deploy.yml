@@ -33,6 +33,7 @@ jobs:
           # Docker 이미지 태그를 생성하는 부분
           TAG_NAME=main-$(date +%Y%m%d-%H%M%S)-${GITHUB_SHA::7}  # 현재 날짜와 커밋 SHA를 조합하여 태그 생성
           echo "IMAGE_TAG=$TAG_NAME" >> $GITHUB_ENV  # GitHub Actions의 환경 변수로 설정
+          echo "Generated IMAGE_TAG: $TAG_NAME"
 
       - name: Docker 이미지 빌드
         run: |
@@ -47,8 +48,10 @@ jobs:
   deploy:
     needs: build  # build 작업이 완료된 후 deploy 작업 실행
     runs-on: ubuntu-latest  # 배포 작업을 실행할 환경 (우분투 최신 버전)
-
     steps:
+      - name: 환경 변수 확인
+        run: echo "Deploying with IMAGE_TAG=${{ env.IMAGE_TAG }}"
+
       - name: EC2 서버에 SSH로 접속하여 배포
         uses: appleboy/ssh-action@v0.1.7  # EC2 서버에 SSH로 접속하기 위한 액션
         with:
