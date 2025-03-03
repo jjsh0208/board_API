@@ -8,6 +8,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest  # 빌드 작업이 실행될 환경 (우분투 최신 버전)
+    outputs:
+      image_tag: ${{ steps.set_tag.outputs.image_tag }}  # IMAGE_TAG를 outputs으로 설정
 
     steps:
       - name: checkout
@@ -20,7 +22,7 @@ jobs:
           java-version: '17'  # JDK 17 버전 사용
 
       # gradlew 실행 권한 부여 및 빌드
-      - name: gradle 실행 권한 부여 및 빌드
+      - name: Gradle 실행 권한 부여 및 빌드
         run: |
           chmod +x ./gradlew  # gradlew 실행 권한을 부여
           ./gradlew clean build  # Gradle을 사용해 빌드 작업 실행
@@ -29,28 +31,29 @@ jobs:
         run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin  # DockerHub에 로그인
 
       - name: Docker 이미지 태그 생성
+        id: set_tag  # ID를 지정해야 outputs 사용 가능
         run: |
-          # Docker 이미지 태그를 생성하는 부분
-          TAG_NAME=main-$(date +%Y%m%d-%H%M%S)-${GITHUB_SHA::7}  # 현재 날짜와 커밋 SHA를 조합하여 태그 생성
-          echo "IMAGE_TAG=$TAG_NAME" >> $GITHUB_ENV  # GitHub Actions의 환경 변수로 설정
-          echo "Generated IMAGE_TAG: $TAG_NAME"
+          TAG_NAME=main-$(date +%Y%m%d-%H%M%S)-${GITHUB_SHA::7}
+          echo "IMAGE_TAG=$TAG_NAME" >> $GITHUB_ENV  # 환경 변수 설정
+          echo "::set-output name=image_tag::$TAG_NAME"  # outputs에 저장
 
       - name: Docker 이미지 빌드
         run: |
-          # Docker 이미지를 빌드하고 태그를 추가하는 단계
-          docker build --no-cache -t ${{ secrets.DOCKER_USERNAME }}/board-api:${{ env.IMAGE_TAG }} .      # Docker 이미지 빌드
+          docker build --no-cache -t ${{ secrets.DOCKER_USERNAME }}/board-api:${{ env.IMAGE_TAG }} .  # Docker 이미지 빌드
 
       - name: Docker Hub에 푸시
         run: |
-          # Docker Hub에 이미지를 푸시하는 단계
           docker push ${{ secrets.DOCKER_USERNAME }}/board-api:${{ env.IMAGE_TAG }}  # 빌드한 이미지를 DockerHub에 푸시
 
   deploy:
     needs: build  # build 작업이 완료된 후 deploy 작업 실행
     runs-on: ubuntu-latest  # 배포 작업을 실행할 환경 (우분투 최신 버전)
+    env:
+      IMAGE_TAG: ${{ needs.build.outputs.image_tag }}  # build의 outputs에서 image_tag 가져오기
+
     steps:
-      - name: 환경 변수 확인
-        run: echo "Deploying with IMAGE_TAG=${{ env.IMAGE_TAG }}"
+      - name: 환경 변수 확인 (디버깅용)
+        run: echo "Deploying with IMAGE_TAG=${IMAGE_TAG}"  # 디버깅용 로그 출력
 
       - name: EC2 서버에 SSH로 접속하여 배포
         uses: appleboy/ssh-action@v0.1.7  # EC2 서버에 SSH로 접속하기 위한 액션
@@ -59,19 +62,21 @@ jobs:
           username: ${{ secrets.EC2_USER }}  # EC2 사용자 이름
           key: ${{ secrets.EC2_PRIVATE_KEY }}  # EC2 비공개 키
           script: |
+            echo "Deploying Docker image: ${{ secrets.DOCKER_USERNAME }}/board-api:${IMAGE_TAG}"
+
             # 기존 컨테이너 종료 및 제거
-            sudo docker stop board-api || true  # board-api 컨테이너가 실행 중이면 중지
-            sudo docker rm board-api || true  # board-api 컨테이너를 삭제
+            sudo docker stop board-api || true
+            sudo docker rm board-api || true
 
             # 새 이미지 가져오기
-            sudo docker pull ${{ secrets.DOCKER_USERNAME }}/board-api:${{ env.IMAGE_TAG }}  # DockerHub에서 새 이미지를 가져오기
+            sudo docker pull ${{ secrets.DOCKER_USERNAME }}/board-api:${IMAGE_TAG}
 
             sudo docker images
-          
+
             # 최신 태그 적용
-            sudo docker tag ${{ secrets.DOCKER_USERNAME }}/board-api:${{ env.IMAGE_TAG }} ${{ secrets.DOCKER_USERNAME }}/board-api:latest  # 최신 태그 적용
+            sudo docker tag ${{ secrets.DOCKER_USERNAME }}/board-api:${IMAGE_TAG} ${{ secrets.DOCKER_USERNAME }}/board-api:latest
 
             sudo docker images
 
             # 컨테이너 실행
-            sudo docker run -d --name board-api --network board_network -p 8080:8080 ${{ secrets.DOCKER_USERNAME }}/board-api:latest  # 새 컨테이너 실행
+            sudo docker run -d --name board-api --network board_network -p 8080:8080 ${{ secrets.DOCKER_USERNAME }}/board-api:latest
