@@ -7,52 +7,55 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest  # 빌드 작업이 실행될 환경 (우분투 최신 버전)
     outputs:
-      image_tag: ${{ steps.set_tag.outputs.image_tag }}  # build 단계의 output 값 전달
+      image_tag: ${{ steps.set_tag.outputs.image_tag }}  # IMAGE_TAG를 outputs으로 설정
 
     steps:
       - name: checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4  # 레포지토리의 소스 코드를 체크아웃하는 단계
 
       - name: JDK 17 version setup
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v3  # JDK 17 버전을 설정하는 단계
         with:
-          distribution: 'temurin'
-          java-version: '17'
+          distribution: 'temurin'  # temurin JDK 배포판 사용
+          java-version: '17'  # JDK 17 버전 사용
 
+      # gradlew 실행 권한 부여 및 빌드
       - name: Gradle 실행 권한 부여 및 빌드
         run: |
-          chmod +x ./gradlew
-          ./gradlew clean build
+          chmod +x ./gradlew  # gradlew 실행 권한을 부여
+          ./gradlew clean build  # Gradle을 사용해 빌드 작업 실행
 
       - name: DockerHub 로그인
-        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin  # DockerHub에 로그인
 
       - name: Docker 이미지 태그 생성
-        id: set_tag
+        id: set_tag  # ID를 지정해야 outputs 사용 가능
         run: |
           TAG_NAME=main-$(date +%Y%m%d-%H%M%S)-${GITHUB_SHA::7}
-          echo "IMAGE_TAG=$TAG_NAME" >> $GITHUB_ENV  # 환경 변수로 저장
-          echo "image_tag=$TAG_NAME" >> $GITHUB_OUTPUT  # 최신 방식으로 outputs 저장 (set-output 제거)
+          echo "IMAGE_TAG=$TAG_NAME" >> $GITHUB_ENV  # 환경 변수 설정
+          echo "image_tag=$TAG_NAME" >> $GITHUB_OUTPUT  # outputs에 저장
 
       - name: Docker 이미지 빌드
         run: |
-          docker build --no-cache -t ${{ secrets.DOCKER_USERNAME }}/board-api:${{ env.IMAGE_TAG }} .
+          docker build --no-cache -t ${{ secrets.DOCKER_USERNAME }}/board-api:${{ env.IMAGE_TAG }} .  # Docker 이미지 빌드
 
       - name: Docker Hub에 푸시
         run: |
-          docker push ${{ secrets.DOCKER_USERNAME }}/board-api:${{ env.IMAGE_TAG }}
+          docker push ${{ secrets.DOCKER_USERNAME }}/board-api:${{ env.IMAGE_TAG }}  # 빌드한 이미지를 DockerHub에 푸시
 
   deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    env:
-      IMAGE_TAG: ${{ needs.build.outputs.image_tag }}  # build 단계에서 생성된 태그 가져오기
-
+    needs: build  # build 작업이 완료된 후 deploy 작업 실행
+    runs-on: ubuntu-latest  # 배포 작업을 실행할 환경 (우분투 최신 버전)
     steps:
-      - name: 환경 변수 확인 (디버깅용)
-        run: echo "Deploying with IMAGE_TAG=${IMAGE_TAG}"
+      - name: 환경 변수 디버깅
+        run: |
+          echo "IMAGE_TAG 값: '${{ needs.build.outputs.image_tag }}'"
+          if [[ -z "${{ needs.build.outputs.image_tag }}" ]]; then
+            echo "❌ ERROR: IMAGE_TAG가 비어 있습니다!"
+            exit 1
+          fi
 
       - name: EC2 서버에 SSH로 접속하여 배포
         uses: appleboy/ssh-action@v0.1.7
@@ -60,18 +63,19 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_PRIVATE_KEY }}
+          envs: IMAGE_TAG  # IMAGE_TAG를 EC2에 전달
           script: |
             echo "Deploying Docker image: ${{ secrets.DOCKER_USERNAME }}/board-api:${IMAGE_TAG}"
-
+            
             sudo docker stop board-api || true
             sudo docker rm board-api || true
-
+            
             sudo docker pull ${{ secrets.DOCKER_USERNAME }}/board-api:${IMAGE_TAG}
-
+            
             sudo docker images
-
+            
             sudo docker tag ${{ secrets.DOCKER_USERNAME }}/board-api:${IMAGE_TAG} ${{ secrets.DOCKER_USERNAME }}/board-api:latest
-
+            
             sudo docker images
-
+            
             sudo docker run -d --name board-api --network board_network -p 8080:8080 ${{ secrets.DOCKER_USERNAME }}/board-api:latest
