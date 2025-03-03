@@ -33,16 +33,19 @@ jobs:
       - name: Docker 이미지 태그 생성
         id: set_tag  # ID를 지정해야 outputs 사용 가능
         run: |
+          # 현재 날짜와 시간, GitHub 커밋 SHA 값을 기반으로 태그를 생성
           TAG_NAME=main-$(date +%Y%m%d-%H%M%S)-${GITHUB_SHA::7}
           echo "IMAGE_TAG=$TAG_NAME" >> $GITHUB_ENV  # 환경 변수 설정
           echo "image_tag=$TAG_NAME" >> $GITHUB_OUTPUT # outputs에 저장
 
       - name: Docker 이미지 빌드
         run: |
+          # Docker 이미지를 빌드할 때 캐시를 사용하지 않도록 --no-cache 옵션을 추가
           docker build --no-cache -t ${{ secrets.DOCKER_USERNAME }}/board-api:${{ env.IMAGE_TAG }} .  # Docker 이미지 빌드
 
       - name: Docker Hub에 푸시
         run: |
+          # 빌드한 이미지를 DockerHub에 푸시
           docker push ${{ secrets.DOCKER_USERNAME }}/board-api:${{ env.IMAGE_TAG }}  # 빌드한 이미지를 DockerHub에 푸시
 
   deploy:
@@ -50,24 +53,25 @@ jobs:
     runs-on: ubuntu-latest  # 배포 작업을 실행할 환경 (우분투 최신 버전)
     steps:
       - name: EC2 서버에 SSH로 접속하여 배포
-        uses: appleboy/ssh-action@v0.1.7
+        uses: appleboy/ssh-action@v0.1.7  # SSH를 통해 EC2 서버에 접속하여 배포 작업 수행
         with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.EC2_PRIVATE_KEY }}
+          host: ${{ secrets.EC2_HOST }}  # EC2 호스트 주소
+          username: ${{ secrets.EC2_USER }}  # EC2 사용자명
+          key: ${{ secrets.EC2_PRIVATE_KEY }}  # EC2 서버의 개인 키
           script: |
-            IMAGE_TAG=${{ needs.build.outputs.image_tag }}  # build job에서 설정한 image_tag 값 참조
+            # build job에서 설정한 image_tag 값을 참조
+            IMAGE_TAG=${{ needs.build.outputs.image_tag }}  
             echo "Deploying Docker image: ${{ secrets.DOCKER_USERNAME }}/board-api:${IMAGE_TAG}"
-            
+
+            # 기존 컨테이너가 실행 중이면 정지하고 삭제
             sudo docker stop board-api || true
             sudo docker rm board-api || true
-            
+
+            # 최신 이미지를 DockerHub에서 풀
             sudo docker pull ${{ secrets.DOCKER_USERNAME }}/board-api:${IMAGE_TAG}
-            
-            sudo docker images
-            
+
+            # 최신 태그를 'latest'로 설정
             sudo docker tag ${{ secrets.DOCKER_USERNAME }}/board-api:${IMAGE_TAG} ${{ secrets.DOCKER_USERNAME }}/board-api:latest
-            
-            sudo docker images
-            
+
+            # 새로운 Docker 컨테이너 실행 (포트 8080에 매핑)
             sudo docker run -d --name board-api --network board_network -p 8080:8080 ${{ secrets.DOCKER_USERNAME }}/board-api:latest
